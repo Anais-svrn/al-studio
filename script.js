@@ -1,268 +1,40 @@
 const STORAGE_KEY = "al-studio-wardrobe";
-
+const LAUNDRY_KEY = "al-studio-laundry";
 const defaultWardrobe = [
-  { id: crypto.randomUUID(), name: "Robe fluide", category: "robe", style: "Chic", color: "Blanc cassé", emoji: "👗" },
-  { id: crypto.randomUUID(), name: "Jean straight", category: "bas", style: "Décontracté", color: "Bleu denim", emoji: "👖" },
-  { id: crypto.randomUUID(), name: "Trench beige", category: "veste", style: "Simple", color: "Beige", emoji: "🧥" },
-  { id: crypto.randomUUID(), name: "Sneakers blanches", category: "chaussures", style: "Sportwear", color: "Blanc", emoji: "👟" }
+  { id: crypto.randomUUID(), name: "Robe fluide", category: "vêtements", style: "Chic", color: "Blanc cassé", emoji: "👗" },
+  { id: crypto.randomUUID(), name: "Jean straight", category: "vêtements", style: "Décontracté", color: "Bleu denim", emoji: "👖" },
+  { id: crypto.randomUUID(), name: "Sneakers blanches", category: "chaussures", style: "Sportwear", color: "Blanc", emoji: "👟" },
+  { id: crypto.randomUUID(), name: "Sac violet", category: "sacs", style: "Chic", color: "Violet", emoji: "👜" },
+  { id: crypto.randomUUID(), name: "Boucles dorées", category: "bijoux", style: "Chic", color: "Doré", emoji: "💎" }
 ];
-
-const styles = [
-  { name: "Chic", icon: "✨" },
-  { name: "Décontracté", icon: "☁️" },
-  { name: "Simple", icon: "✓" },
-  { name: "Sportwear", icon: "🏃" },
-  { name: "Bureau", icon: "💼" }
-];
-
-const state = {
-  userName: "Anaïs",
-  selectedStyle: "Chic",
-  wardrobe: loadWardrobe(),
-  favorites: ["Élégance légère"],
-  activeDay: new Date().getDate()
-};
-
-const greetingName = document.getElementById("greeting-name");
-const weatherTemp = document.getElementById("weather-temp");
-const lookTitle = document.getElementById("look-title");
-const lookRecommendation = document.getElementById("look-recommendation-text");
-const styleChips = document.getElementById("style-chips");
-const wardrobeGrid = document.getElementById("wardrobe-grid");
-const calendar = document.getElementById("calendar");
-const time = document.getElementById("time");
-const fabAdd = document.getElementById("fab-add");
-const addWardrobeBtn = document.getElementById("add-wardrobe-btn");
-const favoriteLook = document.getElementById("favorite-look");
-const addGarmentModal = document.getElementById("add-garment-modal");
-const garmentForm = document.getElementById("garment-form");
-const closeModal = document.getElementById("close-modal");
-
-function loadWardrobe() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultWardrobe));
-    return defaultWardrobe;
-  }
-
-  try {
-    return JSON.parse(saved);
-  } catch {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultWardrobe));
-    return defaultWardrobe;
-  }
+const styles = [{name:"Chic",icon:"✨"},{name:"Décontracté",icon:"☁️"},{name:"Simple",icon:"✓"},{name:"Sportwear",icon:"🏃"},{name:"Bureau",icon:"💼"}];
+const looks = ["Élégance légère", "Look décontracté chic", "Set monochrome fluide"];
+const state = { userName:"Anaïs", selectedStyle:"Chic", closetTab:"vêtements", wardrobe:load(STORAGE_KEY, defaultWardrobe), laundry:load(LAUNDRY_KEY, []), favorites:["Élégance légère"], activeDay:new Date().getDate() };
+const app = document.getElementById("app"); const menu = document.getElementById("menu-drawer"); const backdrop = document.getElementById("drawer-backdrop");
+function load(key, fallback){ try { const value=localStorage.getItem(key); return value ? JSON.parse(value) : fallback; } catch { return fallback; } }
+function save(key,value){ localStorage.setItem(key,JSON.stringify(value)); }
+function route(){ return location.hash.replace("#","") || "home"; }
+function navigate(name){ location.hash=name; closeMenu(); render(); window.scrollTo({top:0,behavior:"smooth"}); }
+function updateTime(){ document.getElementById("time").textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}); }
+function shell(title,subtitle,content){ return `<section class="page-heading"><p class="eyebrow">AL STUDIO</p><h1>${title}</h1><p>${subtitle}</p></section>${content}`; }
+function renderHome(){
+  return `<section class="hero"><div><p class="subtitle">${new Date().getHours()<18?"Bonjour":"Bonsoir"}</p><h1>${state.userName}</h1></div><div class="weather-pill"><span class="weather-icon">☀️</span><div><small>Après-midi</small><strong>26°</strong></div></div></section>
+  <section class="look-card"><div class="look-card-header"><div><p class="eyebrow">Look du jour</p><h2>${looks[0]}</h2></div><button class="favorite-toggle" data-favorite="${looks[0]}" aria-label="Ajouter aux favoris">${state.favorites.includes(looks[0])?"♥":"♡"}</button></div><div class="outfit-visual"><div class="garment garment-top">haut</div><div class="garment garment-bottom">bas</div><div class="garment garment-shoes">chaussures</div></div><div class="look-recommendation"><span>Suggestion beauté</span><strong>cheveux lâchés + légère brillance</strong></div></section>
+  <section class="panel styles-panel"><div class="section-header"><h3>Styles</h3><button class="arrow-btn" data-route="closet">›</button></div><div class="style-chips">${styleChips()}</div></section>
+  <section class="calendar-card"><div class="section-header"><h3>Calendrier</h3><button class="text-btn" data-route="calendar">Voir tout</button></div>${calendarMarkup(true)}</section>
+  <section class="closet-card"><div class="section-header"><h3>Mon dressing</h3><button class="text-btn" data-route="closet">Ouvrir</button></div><div class="wardrobe-grid">${wardrobeMarkup(state.wardrobe.slice(0,4))}</div></section>`;
 }
-
-function persistWardrobe() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.wardrobe));
-}
-
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Bonjour";
-  if (hour < 18) return "Bon après-midi";
-  return "Bonsoir";
-}
-
-function updateTime() {
-  const now = new Date();
-  const formatted = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  time.textContent = formatted;
-
-  const greetingText = getGreeting();
-  greetingName.textContent = `${greetingText}, ${state.userName}`;
-}
-
-function updateWeather() {
-  const temp = "26°";
-  weatherTemp.textContent = temp;
-}
-
-function renderStyleChips() {
-  styleChips.innerHTML = "";
-
-  styles.forEach((style) => {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = `style-chip ${style.name === state.selectedStyle ? "active" : ""}`;
-    chip.innerHTML = `<span>${style.icon}</span><span>${style.name}</span>`;
-
-    chip.addEventListener("click", () => {
-      state.selectedStyle = style.name;
-      renderStyleChips();
-      renderLook();
-    });
-
-    styleChips.appendChild(chip);
-  });
-}
-
-function getLookData() {
-  const weatherBase = {
-    hot: ["Robe légère", "Look décontracté chic", "Set monochrome fluide"],
-    cool: ["Manteau léger", "Tenue de bureau élégante", "Look cosy premium"]
-  };
-
-  const chosenList = weatherBase.hot;
-  const matching = chosenList[Math.floor(Math.random() * chosenList.length)];
-
-  const recommendations = {
-    Chic: "cheveux lâchés + légère brillance",
-    Décontracté: "tresse douce + gloss nude",
-    Simple: "brush-up naturel + teint lumineux",
-    Sportwear: "queue haute + bronzer discret",
-    Bureau: "chignon élégant + rouge à lèvres discret"
-  };
-
-  return {
-    title: matching,
-    recommendation: recommendations[state.selectedStyle] || recommendations.Chic
-  };
-}
-
-function renderLook() {
-  const look = getLookData();
-  lookTitle.textContent = look.title;
-  lookRecommendation.textContent = look.recommendation;
-
-  const favorite = state.favorites.includes(look.title);
-  favoriteLook.textContent = favorite ? "♥" : "♡";
-  favoriteLook.style.background = favorite ? "rgba(255, 107, 132, 0.12)" : "rgba(123, 90, 247, 0.1)";
-  favoriteLook.style.color = favorite ? "#ff5d7a" : "var(--primary-strong)";
-
-  favoriteLook.onclick = () => {
-    if (state.favorites.includes(look.title)) {
-      state.favorites = state.favorites.filter((item) => item !== look.title);
-    } else {
-      state.favorites.push(look.title);
-    }
-    renderLook();
-  };
-}
-
-function renderWardrobe() {
-  wardrobeGrid.innerHTML = "";
-
-  state.wardrobe.forEach((item) => {
-    const card = document.createElement("article");
-    card.className = "wardrobe-item";
-
-    const thumb = document.createElement("div");
-    thumb.className = "wardrobe-thumb";
-
-    if (item.image) {
-      const img = document.createElement("img");
-      img.src = item.image;
-      img.alt = item.name;
-      thumb.appendChild(img);
-    } else {
-      thumb.textContent = item.emoji || "🧥";
-    }
-
-    const meta = document.createElement("div");
-    meta.className = "wardrobe-meta";
-    meta.innerHTML = `
-      <strong>${item.name}</strong>
-      <span>${item.category} · ${item.style}</span>
-    `;
-
-    card.appendChild(thumb);
-    card.appendChild(meta);
-    wardrobeGrid.appendChild(card);
-  });
-}
-
-function renderCalendar() {
-  const today = new Date();
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const firstDay = monthStart.getDay();
-  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-
-  calendar.innerHTML = "";
-
-  const dayNames = ["L", "M", "M", "J", "V", "S", "D"];
-  dayNames.forEach((day) => {
-    const el = document.createElement("div");
-    el.className = "calendar-empty";
-    el.textContent = day;
-    calendar.appendChild(el);
-  });
-
-  for (let i = 0; i < firstDay; i++) {
-    const empty = document.createElement("div");
-    empty.className = "calendar-empty";
-    empty.textContent = "";
-    calendar.appendChild(empty);
-  }
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const pill = document.createElement("button");
-    pill.type = "button";
-    pill.className = `calendar-day ${day === state.activeDay ? "active" : ""} ${day % 3 === 0 ? "has-look" : ""}`;
-    pill.textContent = day;
-    pill.setAttribute("aria-label", `Jour ${day}`);
-    pill.addEventListener("click", () => {
-      state.activeDay = day;
-      renderCalendar();
-    });
-    calendar.appendChild(pill);
-  }
-}
-
-function openModal() {
-  addGarmentModal.showModal();
-}
-
-function closeGarmentModal() {
-  addGarmentModal.close();
-  garmentForm.reset();
-}
-
-function handleNewGarment(event) {
-  event.preventDefault();
-
-  const fileInput = document.getElementById("garment-photo");
-  const file = fileInput.files[0];
-  const objectURL = file ? URL.createObjectURL(file) : "";
-
-  const garment = {
-    id: crypto.randomUUID(),
-    name: document.getElementById("garment-name").value.trim() || "Nouvel article",
-    category: document.getElementById("garment-category").value,
-    style: document.getElementById("garment-style").value,
-    color: document.getElementById("garment-color").value.trim() || "Couleur neutre",
-    emoji: categoryEmoji(document.getElementById("garment-category").value),
-    image: objectURL
-  };
-
-  state.wardrobe.unshift(garment);
-  persistWardrobe();
-  renderWardrobe();
-  closeGarmentModal();
-}
-
-function categoryEmoji(category) {
-  const emojiMap = {
-    haut: "👕",
-    bas: "👖",
-    robe: "👗",
-    veste: "🧥",
-    accessoire: "👜",
-    chaussures: "👟"
-  };
-
-  return emojiMap[category] || "🧥";
-}
-
-fabAdd.addEventListener("click", openModal);
-addWardrobeBtn.addEventListener("click", openModal);
-closeModal.addEventListener("click", closeGarmentModal);
-garmentForm.addEventListener("submit", handleNewGarment);
-
-updateTime();
-updateWeather();
-renderStyleChips();
-renderLook();
-renderWardrobe();
-renderCalendar();
-setInterval(updateTime, 60000);
+function styleChips(){ return styles.map(s=>`<button class="style-chip ${state.selectedStyle===s.name?"active":""}" data-style="${s.name}">${s.icon} ${s.name}</button>`).join(""); }
+function wardrobeMarkup(items){ return items.length ? items.map(i=>`<article class="wardrobe-item"><div class="wardrobe-thumb">${i.image?`<img src="${i.image}" alt="${i.name}">`:i.emoji||"🧥"}</div><div class="wardrobe-meta"><strong>${i.name}</strong><span>${i.category} · ${i.style}</span></div></article>`).join("") : `<div class="empty-state"><strong>Ton dressing est vide</strong>Ajoute ton premier article.</div>`; }
+function calendarMarkup(compact=false){ const now=new Date(), start=new Date(now.getFullYear(),now.getMonth(),1), offset=(start.getDay()+6)%7, total=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(); let html=`<div class="calendar-grid">${["L","M","M","J","V","S","D"].map(d=>`<div class="calendar-empty">${d}</div>`).join("")}`; for(let i=0;i<offset;i++)html+=`<div class="calendar-empty"></div>`; for(let d=1;d<=total;d++)html+=`<button class="calendar-day ${d===state.activeDay?"active":""} ${d%3===0?"has-look":""}" data-day="${d}">${d}</button>`; return html+`</div>`; }
+function renderCloset(){ const tabs=["vêtements","chaussures","sacs","bijoux"]; const filtered=state.wardrobe.filter(i=>i.category===state.closetTab || (state.closetTab==="vêtements" && ["haut","bas","robe","veste","vêtements"].includes(i.category))); return shell("My closet","Toute ta garde-robe, organisée par catégorie.",`<section class="closet-card"><div class="tabs">${tabs.map(t=>`<button class="tab ${t===state.closetTab?"active":""}" data-tab="${t}">${t[0].toUpperCase()+t.slice(1)}</button>`).join("")}</div><div class="wardrobe-grid">${wardrobeMarkup(filtered)}</div></section>`); }
+function renderCalendarPage(){ return shell("Calendrier des tenues","Planifie tes looks jour après jour.",`<section class="calendar-card"><div class="section-header"><h3>Septembre 2026</h3><button class="primary-btn" data-route="closet">Choisir un look</button></div>${calendarMarkup()}<div class="schedule-list">${["Lundi 21","Mardi 22","Mercredi 23","Jeudi 24"].map((d,i)=>`<div class="schedule-item"><div><strong>${d}</strong><small>${i%2?"Journée bureau":"Déjeuner & sorties"}</small></div><span class="schedule-look">${looks[i%looks.length]}</span></div>`).join("")}</div></section>`); }
+function renderFavorites(){ return shell("Mes favoris","Tes tenues préférées réunies au même endroit.",`<section class="panel"><div class="card-grid">${state.favorites.map((f,i)=>`<article class="inspiration-card"><div class="inspiration-image">${["👗","✨","🌸"][i%3]}</div><div class="wardrobe-meta"><strong>${f}</strong><span>Look enregistré</span></div></article>`).join("")||`<div class="empty-state"><strong>Aucun favori pour le moment</strong>Clique sur le cœur d'un look pour le retrouver ici.</div>`}</div></section>`); }
+function renderHair(){ const items=[ ["Ondulations naturelles","Pour un look chic et léger","🌊"],["Chignon bas élégant","Parfait pour le bureau","💫"],["Queue haute glossy","Une touche sportwear","🎀"],["Tresse douce","Décontractée et romantique","🌸"] ]; return shell("Inspirations coiffure","Des idées assorties à tes tenues du jour.",`<section class="panel"><div class="card-grid">${items.map(i=>`<article class="inspiration-card"><div class="inspiration-image">${i[2]}</div><div class="wardrobe-meta"><strong>${i[0]}</strong><span>${i[1]}</span></div></article>`).join("")}</div></section>`); }
+function renderLaundry(){ return shell("Au lavage","Mets temporairement de côté les pièces indisponibles.",`<section class="panel"><form id="laundry-form" class="inline-form"><input id="laundry-name" placeholder="Ex. Pull beige" required><button class="primary-btn">Ajouter</button></form><div class="laundry-list">${state.laundry.map((i,n)=>`<div class="laundry-item"><div><strong>${i.name}</strong><small>Ajouté le ${i.date}</small></div><button class="text-btn" data-remove-laundry="${n}">Disponible</button></div>`).join("")||`<div class="empty-state"><strong>Tout est disponible</strong>Aucun vêtement n'est actuellement au lavage.</div>`}</div></section>`); }
+function render(){ const pages={home:renderHome,closet:renderCloset,calendar:renderCalendarPage,favorites:renderFavorites,hair:renderHair,laundry:renderLaundry}; app.innerHTML=(pages[route()]||renderHome)(); document.querySelectorAll("[data-route]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.route))); document.querySelectorAll("[data-style]").forEach(b=>b.addEventListener("click",()=>{state.selectedStyle=b.dataset.style;render();})); document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{state.closetTab=b.dataset.tab;render();})); document.querySelectorAll("[data-day]").forEach(b=>b.addEventListener("click",()=>{state.activeDay=Number(b.dataset.day);render();})); document.querySelectorAll("[data-favorite]").forEach(b=>b.addEventListener("click",()=>{const x=b.dataset.favorite;state.favorites=state.favorites.includes(x)?state.favorites.filter(v=>v!==x):[...state.favorites,x];render();})); document.querySelectorAll("[data-remove-laundry]").forEach(b=>b.addEventListener("click",()=>{state.laundry.splice(Number(b.dataset.removeLaundry),1);save(LAUNDRY_KEY,state.laundry);render();})); const lf=document.getElementById("laundry-form"); if(lf)lf.addEventListener("submit",e=>{e.preventDefault();state.laundry.push({name:document.getElementById("laundry-name").value,date:new Date().toLocaleDateString("fr-FR")});save(LAUNDRY_KEY,state.laundry);render();}); }
+function closeMenu(){menu.classList.remove("open");backdrop.classList.remove("open");menu.setAttribute("aria-hidden","true");document.getElementById("menu-toggle").setAttribute("aria-expanded","false");}
+function openMenu(){menu.classList.add("open");backdrop.classList.add("open");menu.setAttribute("aria-hidden","false");document.getElementById("menu-toggle").setAttribute("aria-expanded","true");}
+document.getElementById("menu-toggle").addEventListener("click",openMenu); document.getElementById("menu-close").addEventListener("click",closeMenu); backdrop.addEventListener("click",closeMenu); window.addEventListener("hashchange",render); document.getElementById("fab-add").addEventListener("click",()=>document.getElementById("add-garment-modal").showModal()); document.getElementById("close-modal").addEventListener("click",()=>document.getElementById("add-garment-modal").close());
+document.getElementById("garment-form").addEventListener("submit",e=>{e.preventDefault();const cat=document.getElementById("garment-category").value,file=document.getElementById("garment-photo").files[0];state.wardrobe.unshift({id:crypto.randomUUID(),name:document.getElementById("garment-name").value,category:cat,style:document.getElementById("garment-style").value,color:document.getElementById("garment-color").value,emoji:{"vêtements":"👗",chaussures:"👟",sacs:"👜",bijoux:"💎"}[cat],image:file?URL.createObjectURL(file):""});save(STORAGE_KEY,state.wardrobe);document.getElementById("add-garment-modal").close();e.target.reset();render();});
+updateTime();setInterval(updateTime,60000);render();
