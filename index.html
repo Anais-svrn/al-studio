@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#7b5af7" />
+    <meta
+      name="description"
+      content="AL STUDIO — dressing intelligent, suggestions de looks, météo et calendrier de tenues."
+    />
+    <title>AL STUDIO</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon-maskable.svg" />
+    <link rel="stylesheet" href="./style.css" />
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="status-group">
+          <span id="time">--:--</span>
+        </div>
+        <div class="topbar-icons" aria-label="notifications et paramètres">
+          <span>◔</span>
+          <span>⚡</span>
+          <span>☰</span>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <section class="hero">
+          <div>
+            <p class="subtitle">Bonjour</p>
+            <h1 id="greeting-name">Anaïs</h1>
+          </div>
+          <div class="weather-pill" aria-live="polite">
+            <span class="weather-icon">☀️</span>
+            <div>
+              <small>Après-midi</small>
+              <strong id="weather-temp">26°</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="look-card">
+          <div class="look-card-header">
+            <div>
+              <p class="eyebrow">Look du jour</p>
+              <h2 id="look-title">Élégance légère</h2>
+            </div>
+            <button class="favorite-toggle" id="favorite-look" aria-label="Ajouter aux favoris">
+              ♡
+            </button>
+          </div>
+
+          <div class="outfit-visual" aria-label="Visualisation du look">
+            <div class="garment top garment-top">haut</div>
+            <div class="garment bottom garment-bottom">bas</div>
+            <div class="garment shoes garment-shoes">chaussures</div>
+          </div>
+
+          <div class="look-recommendation">
+            <span>Suggestion</span>
+            <strong id="look-recommendation-text">cheveux lâchés + légère brillance</strong>
+          </div>
+        </section>
+
+        <section class="styles-panel">
+          <div class="section-header">
+            <h3>Styles</h3>
+            <button class="arrow-btn" aria-label="Voir plus de styles">›</button>
+          </div>
+          <div id="style-chips" class="style-chips"></div>
+        </section>
+
+        <section class="calendar-card">
+          <div class="section-header">
+            <h3>Calendrier</h3>
+            <button class="text-btn">Voir</button>
+          </div>
+          <div id="calendar" class="calendar-grid" aria-live="polite"></div>
+        </section>
+
+        <section class="dressing-section">
+          <div class="section-header">
+            <h3>Mon dressing</h3>
+            <button class="text-btn" id="add-wardrobe-btn">Ajouter</button>
+          </div>
+          <div id="wardrobe-grid" class="wardrobe-grid"></div>
+        </section>
+      </main>
+
+      <button class="fab" id="fab-add" aria-label="Ajouter un vêtement">＋</button>
+    </div>
+
+    <dialog id="add-garment-modal" class="modal">
+      <form method="dialog" id="garment-form" class="modal-form">
+        <div class="modal-header">
+          <h3>Ajouter un vêtement</h3>
+          <button type="button" class="close-btn" id="close-modal" aria-label="Fermer">×</button>
+        </div>
+
+        <label>
+          Nom
+          <input type="text" id="garment-name" placeholder="Ex. Robe fluide" required />
+        </label>
+
+        <label>
+          Catégorie
+          <select id="garment-category">
+            <option value="haut">Haut</option>
+            <option value="bas">Bas</option>
+            <option value="robe">Robe</option>
+            <option value="veste">Veste</option>
+            <option value="accessoire">Accessoire</option>
+            <option value="chaussures">Chaussures</option>
+          </select>
+        </label>
+
+        <label>
+          Style
+          <select id="garment-style">
+            <option value="Chic">Chic</option>
+            <option value="Décontracté">Décontracté</option>
+            <option value="Simple">Simple</option>
+            <option value="Sportwear">Sportwear</option>
+            <option value="Bureau">Bureau</option>
+          </select>
+        </label>
+
+        <label>
+          Couleur
+          <input type="text" id="garment-color" placeholder="Ex. Blanc cassé" />
+        </label>
+
+        <label>
+          Photo
+          <input type="file" id="garment-photo" accept="image/*" />
+        </label>
+
+        <button type="submit" class="primary-btn">Enregistrer</button>
+      </form>
+    </dialog>
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(console.error);
+        });
+      }
+    </script>
+  </body>
+</html>
