@@ -1,0 +1,14 @@
+:root {
+  --bg: #f7f1ea;
+  --surface: #fffdf9;
+  --ink: #171313;
+  --muted: #6f6460;
+  --rose: #d59a90;
+  --terracotta: #be7968;
+  --gold: #b4856a;
+  --border: #eadfd4;
+  --radius: 18px;
+  --shadow: 0 8px 30px rgba(90, 54, 46, 0.12);
+  --font-title: 'Iowan Old Style', 'Georgia', serif;
+  --font-body: Inter, 'Segoe UI', sans-serif;
+}
