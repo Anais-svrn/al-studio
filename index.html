@@ -1,59 +1,13 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!doctype html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#7b5af7" />
-    <meta name="description" content="AL STUDIO — dressing intelligent, looks, météo et calendrier." />
-    <title>AL STUDIO</title>
-    <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./icon-maskable.svg" />
-    <link rel="stylesheet" href="./style.css" />
-    <script defer src="./script.js"></script>
+    <title>alstudio-scaffold</title>
   </head>
   <body>
-    <div class="app-shell">
-      <header class="topbar">
-        <button class="brand-button" data-route="home" aria-label="Accueil AL STUDIO">AL</button>
-        <span id="time">--:--</span>
-        <div class="topbar-actions">
-          <button class="icon-button" data-route="favorites" aria-label="Mes favoris">♡</button>
-          <button class="icon-button" id="menu-toggle" aria-label="Ouvrir le menu" aria-expanded="false">☰</button>
-        </div>
-      </header>
-
-      <aside class="menu-drawer" id="menu-drawer" aria-hidden="true">
-        <div class="drawer-header"><strong>AL STUDIO</strong><button class="icon-button" id="menu-close" aria-label="Fermer le menu">×</button></div>
-        <nav class="drawer-nav" aria-label="Navigation principale">
-          <button data-route="home">⌂ <span>Accueil</span></button>
-          <button data-route="closet">👗 <span>My closet</span></button>
-          <button data-route="calendar">▦ <span>Calendrier des tenues</span></button>
-          <button data-route="favorites">♡ <span>Tenues favorites</span></button>
-          <button data-route="hair">✦ <span>Inspirations coiffure</span></button>
-          <button data-route="laundry">◌ <span>Vêtements au lavage</span></button>
-        </nav>
-      </aside>
-      <div class="drawer-backdrop" id="drawer-backdrop"></div>
-
-      <main id="app" class="main-content"></main>
-      <button class="fab" id="fab-add" aria-label="Ajouter un vêtement">＋</button>
-    </div>
-
-    <dialog id="add-garment-modal" class="modal">
-      <form method="dialog" id="garment-form" class="modal-form">
-        <div class="modal-header"><h3>Ajouter un vêtement</h3><button type="button" class="close-btn" id="close-modal">×</button></div>
-        <label>Nom<input type="text" id="garment-name" placeholder="Ex. Robe fluide" required /></label>
-        <label>Catégorie<select id="garment-category"><option value="vêtements">Vêtement</option><option value="chaussures">Chaussures</option><option value="sacs">Sac</option><option value="bijoux">Bijou</option></select></label>
-        <label>Style<select id="garment-style"><option>Chic</option><option>Décontracté</option><option>Simple</option><option>Sportwear</option><option>Bureau</option></select></label>
-        <label>Couleur<input type="text" id="garment-color" placeholder="Ex. Blanc cassé" /></label>
-        <label>Photo<input type="file" id="garment-photo" accept="image/*" /></label>
-        <button type="submit" class="primary-btn">Enregistrer dans mon dressing</button>
-      </form>
-    </dialog>
-
-    <script>
-      if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.error));
-    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
